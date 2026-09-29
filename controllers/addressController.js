@@ -73,7 +73,6 @@ const saveAddress = async (req, res) => {
             country, addressType, isDefault: true,
         };
 
-        // Current UI supports one saved address; replace the existing entry.
         user.address = [newAddress];
         await user.save();
 

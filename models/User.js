@@ -93,37 +93,26 @@ const userSchema = new mongoose.Schema(
     // FORGOT PASSWORD - OTP
     // ==================================================
 
-    // SHA-256 hash of the latest OTP
     resetPasswordOtpHash: {
       type: String,
       default: undefined,
     },
-
-    // OTP expiry time
     resetPasswordOtpExpires: {
       type: Date,
       default: undefined,
     },
-
-    // Number of wrong OTP attempts
     resetPasswordOtpAttempts: {
       type: Number,
       default: 0,
     },
-
-    // Last time an OTP was sent
     resetPasswordLastOtpSentAt: {
       type: Date,
       default: undefined,
     },
-
-    // Number of OTP requests in current 24-hour window
     resetPasswordOtpDailyCount: {
       type: Number,
       default: 0,
     },
-
-    // End of current 24-hour OTP request window
     resetPasswordOtpDailyResetAt: {
       type: Date,
       default: undefined,
@@ -132,8 +121,6 @@ const userSchema = new mongoose.Schema(
     // ==================================================
     // FORGOT PASSWORD - RESET TOKEN
     // ==================================================
-
-    // SHA-256 hash of temporary reset token
     resetPasswordTokenHash: {
       type: String,
       default: undefined,
