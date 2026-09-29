@@ -1,5 +1,4 @@
-const dns = require("dns");
-dns.setDefaultResultOrder("ipv4first");
+const dns = require("dns").promises;
 const User = require("../models/User");
 const Cart = require("../models/Cart");
 
@@ -126,48 +125,62 @@ const clearTokenCookie = (res) => {
 // SMTP
 // ======================================================
 
-const createTransporter = () => {
+const createTransporter = async () => {
   const SMTP_HOST = String(process.env.SMTP_HOST || "").trim();
   const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
   const SMTP_USER = String(process.env.SMTP_USER || "").trim();
   const SMTP_PASS = String(process.env.SMTP_PASS || "").trim();
 
-  if (!SMTP_HOST) {
-    throw new Error("SMTP_HOST is missing");
+  console.log("========== SMTP CONFIG ==========");
+  console.log("SMTP_HOST:", SMTP_HOST);
+  console.log("SMTP_PORT:", SMTP_PORT);
+  console.log("SMTP_USER:", SMTP_USER);
+  console.log("SMTP_PASS:", SMTP_PASS ? "PRESENT" : "MISSING");
+  console.log("=================================");
+
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+    throw new Error("SMTP configuration is incomplete");
   }
 
-  if (!SMTP_USER) {
-    throw new Error("SMTP_USER is missing");
+  if (SMTP_PORT !== 587) {
+    throw new Error("SMTP_PORT must be 587");
   }
 
-  if (!SMTP_PASS) {
-    throw new Error("SMTP_PASS is missing");
+  // Force IPv4
+  const ipv4Addresses = await dns.resolve4(SMTP_HOST);
+
+  if (!ipv4Addresses || ipv4Addresses.length === 0) {
+    throw new Error(`No IPv4 address found for ${SMTP_HOST}`);
   }
 
-  if (![465, 587].includes(SMTP_PORT)) {
-    throw new Error("SMTP_PORT must be 465 or 587");
-  }
+  const ipv4 = ipv4Addresses[0];
+
+  console.log("SMTP IPv4:", ipv4);
 
   return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
+    host: ipv4,
+    port: 587,
 
-    // Gmail:
-    // 465 = SSL
-    // 587 = STARTTLS
-    secure: SMTP_PORT === 465,
+    // Port 587 uses STARTTLS
+    secure: false,
+    requireTLS: true,
 
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
 
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 30000,
 
     tls: {
       minVersion: "TLSv1.2",
+
+      // IMPORTANT:
+      // TLS certificate is still for smtp.gmail.com,
+      // not the IPv4 address.
+      servername: SMTP_HOST,
     },
   });
 };
@@ -745,7 +758,7 @@ const requestForgotPasswordOTP = async (req, res) => {
     // CREATE SMTP TRANSPORTER
     // --------------------------------------------------
 
-    transporter = createTransporter();
+    transporter = await createTransporter();
 
     // This will show SMTP authentication/
     // connection problems in Render logs.
