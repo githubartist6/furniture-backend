@@ -1,17 +1,17 @@
-const dns = require("dns").promises;
+
 const User = require("../models/User");
 const Cart = require("../models/Cart");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const crypto = require("crypto");
-
 const {
   randomInt,
   randomBytes,
   createHash,
 } = crypto;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ======================================================
 // HELPERS
@@ -125,65 +125,7 @@ const clearTokenCookie = (res) => {
 // SMTP
 // ======================================================
 
-const createTransporter = async () => {
-  const SMTP_HOST = String(process.env.SMTP_HOST || "").trim();
-  const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
-  const SMTP_USER = String(process.env.SMTP_USER || "").trim();
-  const SMTP_PASS = String(process.env.SMTP_PASS || "").trim();
 
-  console.log("========== SMTP CONFIG ==========");
-  console.log("SMTP_HOST:", SMTP_HOST);
-  console.log("SMTP_PORT:", SMTP_PORT);
-  console.log("SMTP_USER:", SMTP_USER);
-  console.log("SMTP_PASS:", SMTP_PASS ? "PRESENT" : "MISSING");
-  console.log("=================================");
-
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    throw new Error("SMTP configuration is incomplete");
-  }
-
-  if (SMTP_PORT !== 587) {
-    throw new Error("SMTP_PORT must be 587");
-  }
-
-  // Force IPv4
-  const ipv4Addresses = await dns.resolve4(SMTP_HOST);
-
-  if (!ipv4Addresses || ipv4Addresses.length === 0) {
-    throw new Error(`No IPv4 address found for ${SMTP_HOST}`);
-  }
-
-  const ipv4 = ipv4Addresses[0];
-
-  console.log("SMTP IPv4:", ipv4);
-
-  return nodemailer.createTransport({
-    host: ipv4,
-    port: 587,
-
-    // Port 587 uses STARTTLS
-    secure: false,
-    requireTLS: true,
-
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 30000,
-
-    tls: {
-      minVersion: "TLSv1.2",
-
-      // IMPORTANT:
-      // TLS certificate is still for smtp.gmail.com,
-      // not the IPv4 address.
-      servername: SMTP_HOST,
-    },
-  });
-};
 
 // ======================================================
 // SIGNUP
@@ -631,8 +573,6 @@ const updateProfile = async (req, res) => {
 // ======================================================
 
 const requestForgotPasswordOTP = async (req, res) => {
-  let transporter = null;
-
   try {
     const { email } = req.body;
 
@@ -755,29 +695,28 @@ const requestForgotPasswordOTP = async (req, res) => {
     const otpHash = hashValue(otp);
 
     // --------------------------------------------------
-    // CREATE SMTP TRANSPORTER
-    // --------------------------------------------------
+// SEND OTP USING RESEND
+// --------------------------------------------------
 
-    transporter = await createTransporter();
+console.log("Sending OTP email through Resend...");
 
-    // This will show SMTP authentication/
-    // connection problems in Render logs.
-    await transporter.verify();
+if (!process.env.RESEND_API_KEY) {
+  throw new Error("RESEND_API_KEY is missing");
+}
 
-    // --------------------------------------------------
-    // SEND EMAIL
-    // --------------------------------------------------
+const { data: emailData, error: emailError } =
+  await resend.emails.send({
+    from: "Furniture <onboarding@resend.dev>",
+    to: [user.email],
+    subject: "Your Password Reset OTP",
 
-    const mailInfo = await transporter.sendMail({
-      from: `<${process.env.SMTP_USER}>`,
-      to: user.email,
-
-      subject: "Your Password Reset OTP",
-
-      text: `
+    // ------------------------------------------------
+    // PLAIN TEXT EMAIL
+    // ------------------------------------------------
+    text: `
 Password Reset Request
 
-Hello ${user.fullName || "there"},
+Hello ${user.name || "there"},
 
 We received a request to reset the password for your account.
 
@@ -788,15 +727,19 @@ This OTP is valid for 10 minutes.
 IMPORTANT:
 Never share this OTP with anyone.
 
-Our support team will never ask for your OTP or password.
+Our support team will never ask you for your OTP or password.
 
 If you did not request this password reset, you can safely ignore this email.
 
 Regards,
-Furniture Support Team
-      `,
 
-      html: `
+Furniture Support Team
+    `,
+
+    // ------------------------------------------------
+    // HTML EMAIL
+    // ------------------------------------------------
+    html: `
 <!doctype html>
 <html>
 <head>
@@ -817,7 +760,6 @@ Furniture Support Team
     color:#111827;
   "
 >
-
   <table
     width="100%"
     cellpadding="0"
@@ -828,7 +770,6 @@ Furniture Support Team
       padding:40px 15px;
     "
   >
-
     <tr>
       <td align="center">
 
@@ -847,7 +788,6 @@ Furniture Support Team
         >
 
           <!-- TOP ACCENT -->
-
           <tr>
             <td
               style="
@@ -862,7 +802,6 @@ Furniture Support Team
           </tr>
 
           <!-- HEADER -->
-
           <tr>
             <td
               style="
@@ -870,7 +809,6 @@ Furniture Support Team
                 border-bottom:1px solid #f0f1f3;
               "
             >
-
               <div
                 style="
                   display:inline-block;
@@ -909,12 +847,10 @@ Furniture Support Team
               >
                 Use the verification code below to securely continue.
               </p>
-
             </td>
           </tr>
 
           <!-- CONTENT -->
-
           <tr>
             <td
               style="
@@ -942,12 +878,11 @@ Furniture Support Team
                   color:#4b5563;
                 "
               >
-                We received a request to reset the password for your account.
-                Enter the verification code below to continue.
+                We received a request to reset the password for your
+                account. Enter the verification code below to continue.
               </p>
 
               <!-- OTP BOX -->
-
               <table
                 width="100%"
                 cellpadding="0"
@@ -960,7 +895,6 @@ Furniture Support Team
                   margin-bottom:20px;
                 "
               >
-
                 <tr>
                   <td
                     align="center"
@@ -1005,11 +939,9 @@ Furniture Support Team
 
                   </td>
                 </tr>
-
               </table>
 
               <!-- WARNING -->
-
               <table
                 width="100%"
                 cellpadding="0"
@@ -1022,7 +954,6 @@ Furniture Support Team
                   margin-bottom:20px;
                 "
               >
-
                 <tr>
                   <td
                     style="
@@ -1032,6 +963,7 @@ Furniture Support Team
                       color:#9a3412;
                     "
                   >
+
                     <strong>
                       🔒 Never share this OTP with anyone.
                     </strong>
@@ -1040,13 +972,12 @@ Furniture Support Team
 
                     Our support team will never ask for your OTP,
                     password, or security credentials.
+
                   </td>
                 </tr>
-
               </table>
 
               <!-- SECURITY TIPS -->
-
               <table
                 width="100%"
                 cellpadding="0"
@@ -1059,7 +990,6 @@ Furniture Support Team
                   margin-bottom:25px;
                 "
               >
-
                 <tr>
                   <td
                     style="
@@ -1092,7 +1022,6 @@ Furniture Support Team
 
                   </td>
                 </tr>
-
               </table>
 
               <p
@@ -1114,7 +1043,6 @@ Furniture Support Team
           </tr>
 
           <!-- FOOTER -->
-
           <tr>
             <td
               style="
@@ -1154,13 +1082,28 @@ Furniture Support Team
 
       </td>
     </tr>
-
   </table>
-
 </body>
 </html>
-      `,
-    });
+    `,
+  });
+
+// --------------------------------------------------
+// CHECK RESEND RESPONSE
+// --------------------------------------------------
+
+if (emailError) {
+  console.error("Resend Email Error:", emailError);
+
+  throw new Error(
+    emailError.message || "Failed to send OTP email"
+  );
+}
+
+console.log(
+  "OTP email sent successfully through Resend:",
+  emailData?.id
+);
 
     // --------------------------------------------------
     // SAVE OTP DATA ONLY AFTER EMAIL IS SENT
@@ -1188,7 +1131,6 @@ Furniture Support Team
     user.resetPasswordTokenExpires = undefined;
 
     await user.save();
-
     // --------------------------------------------------
     // SUCCESS
     // --------------------------------------------------
@@ -1253,15 +1195,10 @@ Furniture Support Team
       message:
         "Unable to send OTP right now. Please try again later.",
     });
-
-  } finally {
-
-    if (transporter) {
-      transporter.close();
-    }
-
   }
 };
+
+
 
 // ======================================================
 // VERIFY FORGOT PASSWORD OTP
