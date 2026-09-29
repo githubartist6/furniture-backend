@@ -128,7 +128,7 @@ const clearTokenCookie = (res) => {
 
 const createTransporter = () => {
   const SMTP_HOST = String(process.env.SMTP_HOST || "").trim();
-  const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+  const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
   const SMTP_USER = String(process.env.SMTP_USER || "").trim();
   const SMTP_PASS = String(process.env.SMTP_PASS || "").trim();
 
