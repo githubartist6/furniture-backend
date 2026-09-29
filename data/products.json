@@ -1,0 +1,577 @@
+[
+    {
+        "id": 1,
+        "name": "Modern Luxury Sofa",
+        "category": "Sofa",
+        "price": 24999,
+        "oldPrice": 29999,
+        "rating": 4.8,
+        "reviews": 124,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1550254478-ead40cc54513?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1540574163026-643ea20ade25?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Premium modern luxury sofa designed with comfortable cushioning and a stylish design. Perfect for living rooms and modern homes."
+    },
+    {
+        "id": 2,
+        "name": "Premium L Shape Sofa",
+        "category": "Sofa",
+        "price": 34999,
+        "oldPrice": 41999,
+        "rating": 4.7,
+        "reviews": 98,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1550226891-ef816aed4a98?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Elegant L-shaped sofa with spacious seating, premium fabric and comfortable cushions. Ideal for large living rooms."
+    },
+    {
+        "id": 3,
+        "name": "Modern King Size Bed",
+        "category": "Bed",
+        "price": 29999,
+        "oldPrice": 35999,
+        "rating": 4.9,
+        "reviews": 156,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1617325710236-4a36c5f2c2d4?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Modern king-size bed crafted with premium materials and a strong frame. Designed for comfort and elegant bedrooms."
+    },
+    {
+        "id": 4,
+        "name": "Premium Wooden Bed",
+        "category": "Bed",
+        "price": 27999,
+        "oldPrice": 32999,
+        "rating": 4.7,
+        "reviews": 87,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1505693198085-9d5b2f1c7f3a?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1617325710236-4a36c5f2c2d4?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Beautiful wooden bed with a classic finish, durable construction and comfortable sleeping surface."
+    },
+    {
+        "id": 5,
+        "name": "Luxury Dining Table",
+        "category": "Dining Table",
+        "price": 18999,
+        "oldPrice": 22999,
+        "rating": 4.6,
+        "reviews": 74,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1604578762246-41134e37f9cc?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Stylish luxury dining table with a strong wooden frame and elegant finish. Perfect for family dining spaces."
+    },
+    {
+        "id": 6,
+        "name": "Modern Dining Set",
+        "category": "Dining Table",
+        "price": 23999,
+        "oldPrice": 28999,
+        "rating": 4.8,
+        "reviews": 112,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1604578762246-41134e37f9cc?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Complete modern dining set featuring a stylish table and comfortable chairs. Great choice for contemporary homes."
+    },
+    {
+        "id": 7,
+        "name": "Premium Study Table",
+        "category": "Table",
+        "price": 8999,
+        "oldPrice": 10999,
+        "rating": 4.6,
+        "reviews": 65,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1518455027359-f3f8164ba6b3?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Minimal and functional study table with spacious working area. Perfect for home offices, students and professionals."
+    },
+    {
+        "id": 8,
+        "name": "Modern Office Desk",
+        "category": "Table",
+        "price": 11999,
+        "oldPrice": 14999,
+        "rating": 4.7,
+        "reviews": 83,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Modern office desk with a clean design, spacious tabletop and sturdy construction for productive work."
+    },
+    {
+        "id": 9,
+        "name": "Modern Centre Table",
+        "category": "Table",
+        "price": 7999,
+        "oldPrice": 9999,
+        "rating": 4.5,
+        "reviews": 52,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1532372576444-dda954194ad0?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Contemporary centre table with an elegant design that adds style and functionality to your living room."
+    },
+    {
+        "id": 10,
+        "name": "Luxury Glass Centre Table",
+        "category": "Table",
+        "price": 9999,
+        "oldPrice": 12999,
+        "rating": 4.6,
+        "reviews": 61,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1532372576444-dda954194ad0?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Luxury centre table featuring a modern glass-inspired design and premium finish for contemporary interiors."
+    },
+    {
+        "id": 11,
+        "name": "Premium Recliner Chair",
+        "category": "Chair",
+        "price": 15999,
+        "oldPrice": 18999,
+        "rating": 4.8,
+        "reviews": 91,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Comfortable premium recliner chair with soft cushioning and a relaxing design for living rooms and entertainment spaces."
+    },
+    {
+        "id": 12,
+        "name": "Luxury Lounge Chair",
+        "category": "Chair",
+        "price": 12999,
+        "oldPrice": 15999,
+        "rating": 4.7,
+        "reviews": 68,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Stylish lounge chair with premium upholstery and comfortable seating. A perfect addition to modern interiors."
+    },
+    {
+        "id": 13,
+        "name": "Classic Premium Sofa",
+        "category": "Sofa",
+        "price": 21999,
+        "oldPrice": 26999,
+        "rating": 4.6,
+        "reviews": 77,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1550254478-ead40cc54513?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1540574163026-643ea20ade25?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Classic premium sofa combining timeless style with modern comfort and durable upholstery."
+    },
+    {
+        "id": 14,
+        "name": "Elegant Coffee Table",
+        "category": "Table",
+        "price": 6999,
+        "oldPrice": 8999,
+        "rating": 4.5,
+        "reviews": 49,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1532372576444-dda954194ad0?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Elegant coffee table with a modern design and premium finish, perfect for living rooms and lounge areas."
+    },
+    {
+        "id": 15,
+        "name": "Modern Storage Bed",
+        "category": "Bed",
+        "price": 32999,
+        "oldPrice": 38999,
+        "rating": 4.9,
+        "reviews": 138,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1617325710236-4a36c5f2c2d4?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1505693198085-9d5b2f1c7f3a?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Modern storage bed with spacious hidden storage, premium construction and an elegant contemporary design."
+    },
+    {
+        "id": 16,
+        "name": "Premium 3 Door Wardrobe",
+        "category": "Wardrobe",
+        "price": 24999,
+        "oldPrice": 29999,
+        "rating": 4.8,
+        "reviews": 96,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Premium three-door wardrobe with spacious storage, modern finish and durable construction. Perfect for bedrooms and contemporary homes."
+    },
+    {
+        "id": 17,
+        "name": "Modern Sliding Door Wardrobe",
+        "category": "Wardrobe",
+        "price": 32999,
+        "oldPrice": 38999,
+        "rating": 4.9,
+        "reviews": 121,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Modern sliding-door wardrobe designed to provide maximum storage while saving bedroom space. Features a stylish contemporary finish."
+    },
+    {
+        "id": 18,
+        "name": "Luxury Wooden Wardrobe",
+        "category": "Wardrobe",
+        "price": 28999,
+        "oldPrice": 34999,
+        "rating": 4.7,
+        "reviews": 84,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Luxury wooden wardrobe crafted with premium materials and an elegant finish. Offers spacious shelves, hanging space and durable storage."
+    },
+    {
+        "id": 19,
+        "name": "Classic 2 Door Wardrobe",
+        "category": "Wardrobe",
+        "price": 19999,
+        "oldPrice": 23999,
+        "rating": 4.6,
+        "reviews": 72,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Classic two-door wardrobe with a clean design, practical storage and durable construction. Ideal for bedrooms with limited space."
+    },
+    {
+        "id": 20,
+        "name": "Premium Mirror Wardrobe",
+        "category": "Wardrobe",
+        "price": 35999,
+        "oldPrice": 42999,
+        "rating": 4.9,
+        "reviews": 109,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Premium mirror wardrobe combining elegant design with spacious storage. Perfect for modern bedrooms and stylish interiors."
+    },
+    {
+        "id": 21,
+        "name": "Modern Accent Chair",
+        "category": "Chair",
+        "price": 10999,
+        "oldPrice": 13999,
+        "rating": 4.6,
+        "reviews": 58,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Modern accent chair with comfortable cushioning and stylish upholstery. A beautiful choice for living rooms, bedrooms and reading corners."
+    },
+    {
+        "id": 22,
+        "name": "Luxury Office Chair",
+        "category": "Chair",
+        "price": 13999,
+        "oldPrice": 16999,
+        "rating": 4.8,
+        "reviews": 93,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Luxury office chair designed for comfortable long working hours with premium cushioning and a modern professional look."
+    },
+    {
+        "id": 23,
+        "name": "Modern TV Unit",
+        "category": "Table",
+        "price": 14999,
+        "oldPrice": 18999,
+        "rating": 4.7,
+        "reviews": 76,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1532372576444-dda954194ad0?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Modern TV unit with spacious storage compartments and an elegant contemporary design. Perfect for stylish living rooms."
+    },
+    {
+        "id": 24,
+        "name": "Premium Bookshelf",
+        "category": "Table",
+        "price": 8999,
+        "oldPrice": 11999,
+        "rating": 4.5,
+        "reviews": 47,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1594620302200-9a762244a156?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1532372576444-dda954194ad0?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Premium bookshelf with multiple storage sections, sturdy construction and modern styling. Suitable for books, decor and home accessories."
+    },
+    {
+        "id": 25,
+        "name": "Elegant Side Table",
+        "category": "Table",
+        "price": 5999,
+        "oldPrice": 7999,
+        "rating": 4.5,
+        "reviews": 41,
+        "size": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1532372576444-dda954194ad0?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
+        ],
+        "description": "Elegant side table with a compact modern design and premium finish. Perfect beside sofas, beds and lounge chairs."
+    }
+]
