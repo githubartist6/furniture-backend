@@ -132,6 +132,16 @@ const createTransporter = () => {
     SMTP_PASS,
   } = process.env;
 
+  console.log("========== SMTP CONFIG ==========");
+  console.log("SMTP_HOST:", SMTP_HOST || "MISSING");
+  console.log("SMTP_PORT:", SMTP_PORT || "MISSING");
+  console.log("SMTP_USER:", SMTP_USER || "MISSING");
+  console.log(
+    "SMTP_PASS:",
+    SMTP_PASS ? "PRESENT" : "MISSING"
+  );
+  console.log("=================================");
+
   if (
     !SMTP_HOST ||
     !SMTP_PORT ||
@@ -139,20 +149,23 @@ const createTransporter = () => {
     !SMTP_PASS
   ) {
     throw new Error(
-      "SMTP configuration is incomplete in .env"
+      "SMTP configuration is incomplete in environment variables"
     );
   }
 
   const port = Number(SMTP_PORT);
 
   if (!Number.isInteger(port)) {
-    throw new Error("SMTP_PORT must be a valid number");
+    throw new Error(
+      "SMTP_PORT must be a valid number"
+    );
   }
 
   return nodemailer.createTransport({
     host: SMTP_HOST,
-    port,
+    port: port,
     secure: port === 465,
+
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
