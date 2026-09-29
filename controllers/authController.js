@@ -125,50 +125,54 @@ const clearTokenCookie = (res) => {
 // ======================================================
 
 const createTransporter = () => {
-  const {
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASS,
-  } = process.env;
+  const SMTP_HOST = String(process.env.SMTP_HOST || "").trim();
+  const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+  const SMTP_USER = String(process.env.SMTP_USER || "").trim();
+  const SMTP_PASS = String(process.env.SMTP_PASS || "").trim();
 
   console.log("========== SMTP CONFIG ==========");
   console.log("SMTP_HOST:", SMTP_HOST || "MISSING");
-  console.log("SMTP_PORT:", SMTP_PORT || "MISSING");
+  console.log("SMTP_PORT:", SMTP_PORT);
   console.log("SMTP_USER:", SMTP_USER || "MISSING");
-  console.log(
-    "SMTP_PASS:",
-    SMTP_PASS ? "PRESENT" : "MISSING"
-  );
+  console.log("SMTP_PASS:", SMTP_PASS ? "PRESENT" : "MISSING");
   console.log("=================================");
 
-  if (
-    !SMTP_HOST ||
-    !SMTP_PORT ||
-    !SMTP_USER ||
-    !SMTP_PASS
-  ) {
-    throw new Error(
-      "SMTP configuration is incomplete in environment variables"
-    );
+  if (!SMTP_HOST) {
+    throw new Error("SMTP_HOST is missing");
   }
 
-  const port = Number(SMTP_PORT);
+  if (!SMTP_USER) {
+    throw new Error("SMTP_USER is missing");
+  }
 
-  if (!Number.isInteger(port)) {
-    throw new Error(
-      "SMTP_PORT must be a valid number"
-    );
+  if (!SMTP_PASS) {
+    throw new Error("SMTP_PASS is missing");
+  }
+
+  if (![465, 587].includes(SMTP_PORT)) {
+    throw new Error("SMTP_PORT must be 465 or 587");
   }
 
   return nodemailer.createTransport({
     host: SMTP_HOST,
-    port: port,
-    secure: port === 465,
+    port: SMTP_PORT,
+
+    // Gmail:
+    // 465 = SSL
+    // 587 = STARTTLS
+    secure: SMTP_PORT === 465,
 
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
+    },
+
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
+
+    tls: {
+      minVersion: "TLSv1.2",
     },
   });
 };
@@ -645,20 +649,13 @@ const requestForgotPasswordOTP = async (req, res) => {
     }
 
     // --------------------------------------------------
-    // FIND USER IN DATABASE
-    // IMPORTANT:
-    // OTP WILL ONLY BE SENT IF THIS EMAIL EXISTS
+    // FIND USER
+    // OTP WILL ONLY BE SENT IF USER EXISTS
     // --------------------------------------------------
 
     const user = await User.findOne({
       email: cleanEmail,
     });
-
-    // --------------------------------------------------
-    // EMAIL DOES NOT EXIST IN DATABASE
-    // DO NOT GENERATE OTP
-    // DO NOT SEND EMAIL
-    // --------------------------------------------------
 
     if (!user) {
       return res.status(404).json({
@@ -667,18 +664,25 @@ const requestForgotPasswordOTP = async (req, res) => {
       });
     }
 
+    console.log(
+      "Forgot password request for:",
+      user.email
+    );
+
     // --------------------------------------------------
     // CURRENT TIME
     // --------------------------------------------------
 
     const now = Date.now();
 
-    // ==================================================
+    // --------------------------------------------------
     // 60 SECOND RESEND COOLDOWN
-    // ==================================================
+    // --------------------------------------------------
 
     const lastSentAt = user.resetPasswordLastOtpSentAt
-      ? new Date(user.resetPasswordLastOtpSentAt).getTime()
+      ? new Date(
+        user.resetPasswordLastOtpSentAt
+      ).getTime()
       : 0;
 
     if (
@@ -699,9 +703,9 @@ const requestForgotPasswordOTP = async (req, res) => {
       });
     }
 
-    // ==================================================
+    // --------------------------------------------------
     // DAILY OTP LIMIT
-    // ==================================================
+    // --------------------------------------------------
 
     let dailyCount = Number(
       user.resetPasswordOtpDailyCount || 0
@@ -713,9 +717,9 @@ const requestForgotPasswordOTP = async (req, res) => {
       ).getTime()
       : 0;
 
-    // Start a new 24-hour window
     if (!dailyResetAt || now >= dailyResetAt) {
       dailyCount = 0;
+
       dailyResetAt =
         now + 24 * 60 * 60 * 1000;
     }
@@ -725,66 +729,56 @@ const requestForgotPasswordOTP = async (req, res) => {
         dailyResetAt - now;
 
       const remainingHours = Math.ceil(
-        remainingMs / (60 * 60 * 1000)
+        remainingMs /
+        (60 * 60 * 1000)
       );
 
       return res.status(429).json({
         success: false,
-        message: `Daily OTP limit reached. Try again in approximately ${remainingHours} hour(s).`,
+        message:
+          `Daily OTP limit reached. Try again in approximately ${remainingHours} hour(s).`,
       });
     }
 
-    // ==================================================
+    // --------------------------------------------------
     // GENERATE OTP
-    // ==================================================
+    // --------------------------------------------------
 
     const otp = String(
       randomInt(100000, 1000000)
     );
 
+    console.log(
+      "OTP generated for:",
+      user.email
+    );
+
     const otpHash = hashValue(otp);
 
-    // ==================================================
-    // SAVE OTP DATA
-    // ==================================================
-
-    user.resetPasswordOtpHash = otpHash;
-
-    user.resetPasswordOtpExpires =
-      new Date(
-        now + OTP_EXPIRY_MS
-      );
-
-    user.resetPasswordOtpAttempts = 0;
-
-    user.resetPasswordLastOtpSentAt =
-      new Date(now);
-
-    user.resetPasswordOtpDailyCount =
-      dailyCount + 1;
-
-    user.resetPasswordOtpDailyResetAt =
-      new Date(dailyResetAt);
-
-    // New OTP invalidates old reset token
-    user.resetPasswordTokenHash = undefined;
-    user.resetPasswordTokenExpires = undefined;
-
-    await user.save();
-
-    // ==================================================
+    // --------------------------------------------------
     // CREATE SMTP TRANSPORTER
-    // ==================================================
+    // --------------------------------------------------
 
     transporter = createTransporter();
 
-    // ==================================================
-    // SEND OTP ONLY TO DATABASE USER EMAIL
-    // ==================================================
+    console.log("Checking SMTP connection...");
 
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
+    // This will show SMTP authentication/
+    // connection problems in Render logs.
+    await transporter.verify();
+
+    console.log(
+      "SMTP connection successful."
+    );
+
+    // --------------------------------------------------
+    // SEND EMAIL
+    // --------------------------------------------------
+
+    const mailInfo = await transporter.sendMail({
+      from: `"Furniture" <${process.env.SMTP_USER}>`,
       to: user.email,
+
       subject: "Your Password Reset OTP",
 
       text: `
@@ -800,12 +794,13 @@ This OTP is valid for 10 minutes.
 
 IMPORTANT:
 Never share this OTP with anyone.
+
 Our support team will never ask for your OTP or password.
 
 If you did not request this password reset, you can safely ignore this email.
 
 Regards,
-Support Team
+Furniture Support Team
       `,
 
       html: `
@@ -820,13 +815,15 @@ Support Team
   <title>Password Reset OTP</title>
 </head>
 
-<body style="
-  margin:0;
-  padding:0;
-  background-color:#f3f4f6;
-  font-family:Arial,Helvetica,sans-serif;
-  color:#111827;
-">
+<body
+  style="
+    margin:0;
+    padding:0;
+    background:#f3f4f6;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#111827;
+  "
+>
 
   <table
     width="100%"
@@ -834,10 +831,11 @@ Support Team
     cellspacing="0"
     border="0"
     style="
-      background-color:#f3f4f6;
+      background:#f3f4f6;
       padding:40px 15px;
     "
   >
+
     <tr>
       <td align="center">
 
@@ -848,207 +846,252 @@ Support Team
           border="0"
           style="
             max-width:580px;
-            background-color:#ffffff;
+            background:#ffffff;
             border:1px solid #e5e7eb;
             border-radius:16px;
             overflow:hidden;
           "
         >
 
-          <!-- Top Accent -->
+          <!-- TOP ACCENT -->
+
           <tr>
-            <td style="
-              height:5px;
-              background-color:#111827;
-              font-size:0;
-              line-height:0;
-            ">
+            <td
+              style="
+                height:5px;
+                background:#111827;
+                font-size:0;
+                line-height:0;
+              "
+            >
               &nbsp;
             </td>
           </tr>
 
-          <!-- Header -->
-          <tr>
-            <td style="
-              padding:34px 38px 25px 38px;
-              border-bottom:1px solid #f0f1f3;
-            ">
+          <!-- HEADER -->
 
-              <div style="
-                display:inline-block;
-                padding:6px 10px;
-                background-color:#f3f4f6;
-                border-radius:6px;
-                font-size:11px;
-                font-weight:700;
-                color:#6b7280;
-                letter-spacing:1px;
-                margin-bottom:14px;
-              ">
+          <tr>
+            <td
+              style="
+                padding:34px 38px 25px;
+                border-bottom:1px solid #f0f1f3;
+              "
+            >
+
+              <div
+                style="
+                  display:inline-block;
+                  padding:6px 10px;
+                  background:#f3f4f6;
+                  border-radius:6px;
+                  font-size:11px;
+                  font-weight:700;
+                  color:#6b7280;
+                  letter-spacing:1px;
+                  margin-bottom:14px;
+                "
+              >
                 ACCOUNT SECURITY
               </div>
 
-              <h1 style="
-                margin:0;
-                font-size:27px;
-                line-height:1.3;
-                font-weight:700;
-                color:#111827;
-              ">
+              <h1
+                style="
+                  margin:0;
+                  font-size:27px;
+                  line-height:1.3;
+                  font-weight:700;
+                  color:#111827;
+                "
+              >
                 Reset your password
               </h1>
 
-              <p style="
-                margin:10px 0 0 0;
-                font-size:13px;
-                line-height:1.6;
-                color:#6b7280;
-              ">
+              <p
+                style="
+                  margin:10px 0 0;
+                  font-size:13px;
+                  line-height:1.6;
+                  color:#6b7280;
+                "
+              >
                 Use the verification code below to securely continue.
               </p>
 
             </td>
           </tr>
 
-          <!-- Content -->
-          <tr>
-            <td style="
-              padding:30px 38px 35px 38px;
-            ">
+          <!-- CONTENT -->
 
-              <p style="
-                margin:0 0 8px 0;
-                font-size:16px;
-                line-height:1.6;
-                font-weight:600;
-                color:#111827;
-              ">
+          <tr>
+            <td
+              style="
+                padding:30px 38px 35px;
+              "
+            >
+
+              <p
+                style="
+                  margin:0 0 8px;
+                  font-size:16px;
+                  line-height:1.6;
+                  font-weight:600;
+                  color:#111827;
+                "
+              >
                 Hello ${user.name || "there"},
               </p>
 
-              <p style="
-                margin:0 0 25px 0;
-                font-size:15px;
-                line-height:1.7;
-                color:#4b5563;
-              ">
+              <p
+                style="
+                  margin:0 0 25px;
+                  font-size:15px;
+                  line-height:1.7;
+                  color:#4b5563;
+                "
+              >
                 We received a request to reset the password for your account.
                 Enter the verification code below to continue.
               </p>
 
-              <!-- OTP Box -->
+              <!-- OTP BOX -->
+
               <table
                 width="100%"
                 cellpadding="0"
                 cellspacing="0"
                 border="0"
                 style="
-                  background-color:#f8fafc;
+                  background:#f8fafc;
                   border:1px solid #e5e7eb;
                   border-radius:12px;
                   margin-bottom:20px;
                 "
               >
-                <tr>
-                  <td align="center" style="
-                    padding:26px 15px;
-                  ">
 
-                    <div style="
-                      font-size:11px;
-                      font-weight:700;
-                      color:#6b7280;
-                      letter-spacing:1.2px;
-                      margin-bottom:12px;
-                    ">
+                <tr>
+                  <td
+                    align="center"
+                    style="
+                      padding:26px 15px;
+                    "
+                  >
+
+                    <div
+                      style="
+                        font-size:11px;
+                        font-weight:700;
+                        color:#6b7280;
+                        letter-spacing:1.2px;
+                        margin-bottom:12px;
+                      "
+                    >
                       VERIFICATION CODE
                     </div>
 
-                    <div style="
-                      font-size:30px;
-                      line-height:40px;
-                      font-weight:700;
-                      letter-spacing:8px;
-                      color:#111827;
-                      white-space:nowrap;
-                    ">
+                    <div
+                      style="
+                        font-size:30px;
+                        line-height:40px;
+                        font-weight:700;
+                        letter-spacing:8px;
+                        color:#111827;
+                      "
+                    >
                       ${otp}
                     </div>
 
-                    <div style="
-                      margin-top:10px;
-                      font-size:12px;
-                      color:#6b7280;
-                    ">
+                    <div
+                      style="
+                        margin-top:10px;
+                        font-size:12px;
+                        color:#6b7280;
+                      "
+                    >
                       Expires in 10 minutes
                     </div>
 
                   </td>
                 </tr>
+
               </table>
 
-              <!-- Warning -->
+              <!-- WARNING -->
+
               <table
                 width="100%"
                 cellpadding="0"
                 cellspacing="0"
                 border="0"
                 style="
-                  background-color:#fff7ed;
+                  background:#fff7ed;
                   border:1px solid #fed7aa;
                   border-radius:10px;
                   margin-bottom:20px;
                 "
               >
+
                 <tr>
-                  <td style="
-                    padding:16px;
-                    font-size:13px;
-                    line-height:1.65;
-                    color:#9a3412;
-                  ">
+                  <td
+                    style="
+                      padding:16px;
+                      font-size:13px;
+                      line-height:1.65;
+                      color:#9a3412;
+                    "
+                  >
                     <strong>
                       🔒 Never share this OTP with anyone.
                     </strong>
+
                     <br />
+
                     Our support team will never ask for your OTP,
                     password, or security credentials.
                   </td>
                 </tr>
+
               </table>
 
-              <!-- Security Tips -->
+              <!-- SECURITY TIPS -->
+
               <table
                 width="100%"
                 cellpadding="0"
                 cellspacing="0"
                 border="0"
                 style="
-                  background-color:#f9fafb;
+                  background:#f9fafb;
                   border:1px solid #eef0f3;
                   border-radius:10px;
                   margin-bottom:25px;
                 "
               >
-                <tr>
-                  <td style="
-                    padding:17px 18px;
-                  ">
 
-                    <div style="
-                      font-size:13px;
-                      font-weight:700;
-                      color:#111827;
-                      margin-bottom:8px;
-                    ">
+                <tr>
+                  <td
+                    style="
+                      padding:17px 18px;
+                    "
+                  >
+
+                    <div
+                      style="
+                        font-size:13px;
+                        font-weight:700;
+                        color:#111827;
+                        margin-bottom:8px;
+                      "
+                    >
                       Security tips
                     </div>
 
-                    <div style="
-                      font-size:12px;
-                      line-height:1.7;
-                      color:#6b7280;
-                    ">
+                    <div
+                      style="
+                        font-size:12px;
+                        line-height:1.7;
+                        color:#6b7280;
+                      "
+                    >
                       • Never forward this OTP to anyone.<br />
                       • Do not share your password with anyone.<br />
                       • This OTP is valid only for 10 minutes.
@@ -1056,47 +1099,58 @@ Support Team
 
                   </td>
                 </tr>
+
               </table>
 
-              <p style="
-                margin:0;
-                padding-top:22px;
-                border-top:1px solid #eef0f3;
-                font-size:13px;
-                line-height:1.7;
-                color:#6b7280;
-              ">
-                If you did not request a password reset, you can safely
-                ignore this email. No changes will be made to your account.
+              <p
+                style="
+                  margin:0;
+                  padding-top:22px;
+                  border-top:1px solid #eef0f3;
+                  font-size:13px;
+                  line-height:1.7;
+                  color:#6b7280;
+                "
+              >
+                If you did not request a password reset,
+                you can safely ignore this email.
+                No changes will be made to your account.
               </p>
 
             </td>
           </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="
-              padding:22px 38px;
-              background-color:#fafafa;
-              border-top:1px solid #eef0f3;
-              text-align:center;
-            ">
+          <!-- FOOTER -->
 
-              <p style="
-                margin:0;
-                font-size:12px;
-                line-height:1.6;
-                color:#9ca3af;
-              ">
+          <tr>
+            <td
+              style="
+                padding:22px 38px;
+                background:#fafafa;
+                border-top:1px solid #eef0f3;
+                text-align:center;
+              "
+            >
+
+              <p
+                style="
+                  margin:0;
+                  font-size:12px;
+                  line-height:1.6;
+                  color:#9ca3af;
+                "
+              >
                 This is an automated security email.
                 Please do not reply to this message.
               </p>
 
-              <p style="
-                margin:8px 0 0 0;
-                font-size:11px;
-                color:#b0b5bd;
-              ">
+              <p
+                style="
+                  margin:8px 0 0;
+                  font-size:11px;
+                  color:#b0b5bd;
+                "
+              >
                 © ${new Date().getFullYear()} Furniture
               </p>
 
@@ -1107,6 +1161,7 @@ Support Team
 
       </td>
     </tr>
+
   </table>
 
 </body>
@@ -1114,20 +1169,95 @@ Support Team
       `,
     });
 
-    // ==================================================
+    console.log(
+      "Email sent successfully:",
+      mailInfo.messageId
+    );
+
+    // --------------------------------------------------
+    // SAVE OTP DATA ONLY AFTER EMAIL IS SENT
+    // --------------------------------------------------
+
+    user.resetPasswordOtpHash = otpHash;
+
+    user.resetPasswordOtpExpires =
+      new Date(now + OTP_EXPIRY_MS);
+
+    user.resetPasswordOtpAttempts = 0;
+
+    user.resetPasswordLastOtpSentAt =
+      new Date(now);
+
+    user.resetPasswordOtpDailyCount =
+      dailyCount + 1;
+
+    user.resetPasswordOtpDailyResetAt =
+      new Date(dailyResetAt);
+
+    // New OTP invalidates old reset token
+    user.resetPasswordTokenHash = undefined;
+
+    user.resetPasswordTokenExpires = undefined;
+
+    await user.save();
+
+    // --------------------------------------------------
     // SUCCESS
-    // ==================================================
+    // --------------------------------------------------
 
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully to your registered email address.",
+      message:
+        "OTP sent successfully to your registered email address.",
     });
 
   } catch (error) {
 
     console.error(
-      "Request Forgot Password OTP Error:",
-      error
+      "===================================="
+    );
+
+    console.error(
+      "REQUEST FORGOT PASSWORD OTP ERROR"
+    );
+
+    console.error(
+      "Name:",
+      error?.name
+    );
+
+    console.error(
+      "Message:",
+      error?.message
+    );
+
+    console.error(
+      "Code:",
+      error?.code
+    );
+
+    console.error(
+      "Command:",
+      error?.command
+    );
+
+    console.error(
+      "Response:",
+      error?.response
+    );
+
+    console.error(
+      "Response Code:",
+      error?.responseCode
+    );
+
+    console.error(
+      "Stack:",
+      error?.stack
+    );
+
+    console.error(
+      "===================================="
     );
 
     return res.status(500).json({
@@ -1141,6 +1271,7 @@ Support Team
     if (transporter) {
       transporter.close();
     }
+
   }
 };
 
