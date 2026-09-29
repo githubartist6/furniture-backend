@@ -130,13 +130,6 @@ const createTransporter = () => {
   const SMTP_USER = String(process.env.SMTP_USER || "").trim();
   const SMTP_PASS = String(process.env.SMTP_PASS || "").trim();
 
-  console.log("========== SMTP CONFIG ==========");
-  console.log("SMTP_HOST:", SMTP_HOST || "MISSING");
-  console.log("SMTP_PORT:", SMTP_PORT);
-  console.log("SMTP_USER:", SMTP_USER || "MISSING");
-  console.log("SMTP_PASS:", SMTP_PASS ? "PRESENT" : "MISSING");
-  console.log("=================================");
-
   if (!SMTP_HOST) {
     throw new Error("SMTP_HOST is missing");
   }
@@ -664,11 +657,6 @@ const requestForgotPasswordOTP = async (req, res) => {
       });
     }
 
-    console.log(
-      "Forgot password request for:",
-      user.email
-    );
-
     // --------------------------------------------------
     // CURRENT TIME
     // --------------------------------------------------
@@ -748,10 +736,6 @@ const requestForgotPasswordOTP = async (req, res) => {
       randomInt(100000, 1000000)
     );
 
-    console.log(
-      "OTP generated for:",
-      user.email
-    );
 
     const otpHash = hashValue(otp);
 
@@ -761,22 +745,16 @@ const requestForgotPasswordOTP = async (req, res) => {
 
     transporter = createTransporter();
 
-    console.log("Checking SMTP connection...");
-
     // This will show SMTP authentication/
     // connection problems in Render logs.
     await transporter.verify();
-
-    console.log(
-      "SMTP connection successful."
-    );
 
     // --------------------------------------------------
     // SEND EMAIL
     // --------------------------------------------------
 
     const mailInfo = await transporter.sendMail({
-      from: `"Furniture" <${process.env.SMTP_USER}>`,
+      from: `<${process.env.SMTP_USER}>`,
       to: user.email,
 
       subject: "Your Password Reset OTP",
@@ -784,7 +762,7 @@ const requestForgotPasswordOTP = async (req, res) => {
       text: `
 Password Reset Request
 
-Hello ${user.name || "there"},
+Hello ${user.fullName || "there"},
 
 We received a request to reset the password for your account.
 
@@ -1168,11 +1146,6 @@ Furniture Support Team
 </html>
       `,
     });
-
-    console.log(
-      "Email sent successfully:",
-      mailInfo.messageId
-    );
 
     // --------------------------------------------------
     // SAVE OTP DATA ONLY AFTER EMAIL IS SENT
