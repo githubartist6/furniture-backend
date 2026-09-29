@@ -48,7 +48,3 @@ mongoose
   .catch((error) => {
     console.log("MongoDB Connection Error:", error.console.error);
   });
-
-//   MONGO_URI=mongodb+srv://jitendraks20022_db_user:4JByHue2PLCWYNHC@cluster0.dbdiovs.mongodb.net/furniture?retryWrites=true&w=majority
-
-// JWT_SECRET=furniture_secret_key_123

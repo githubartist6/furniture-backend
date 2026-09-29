@@ -606,8 +606,6 @@ const updateProfile = async (req, res) => {
 // ======================================================
 
 const requestForgotPasswordOTP = async (req, res) => {
-  let user = null;
-  let previousOtpData = null;
   let transporter = null;
 
   try {
@@ -634,21 +632,31 @@ const requestForgotPasswordOTP = async (req, res) => {
     }
 
     // --------------------------------------------------
-    // FIND USER
+    // FIND USER IN DATABASE
+    // IMPORTANT:
+    // OTP WILL ONLY BE SENT IF THIS EMAIL EXISTS
     // --------------------------------------------------
 
-    user = await User.findOne({
+    const user = await User.findOne({
       email: cleanEmail,
     });
 
-    // Don't reveal whether email exists
+    // --------------------------------------------------
+    // EMAIL DOES NOT EXIST IN DATABASE
+    // DO NOT GENERATE OTP
+    // DO NOT SEND EMAIL
+    // --------------------------------------------------
+
     if (!user) {
-      return res.status(200).json({
-        success: true,
-        message:
-          "If an account exists with this email, an OTP has been sent.",
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email address.",
       });
     }
+
+    // --------------------------------------------------
+    // CURRENT TIME
+    // --------------------------------------------------
 
     const now = Date.now();
 
@@ -656,17 +664,13 @@ const requestForgotPasswordOTP = async (req, res) => {
     // 60 SECOND RESEND COOLDOWN
     // ==================================================
 
-    const lastSentAt =
-      user.resetPasswordLastOtpSentAt
-        ? new Date(
-          user.resetPasswordLastOtpSentAt
-        ).getTime()
-        : 0;
+    const lastSentAt = user.resetPasswordLastOtpSentAt
+      ? new Date(user.resetPasswordLastOtpSentAt).getTime()
+      : 0;
 
     if (
       lastSentAt &&
-      now - lastSentAt <
-      OTP_RESEND_COOLDOWN_MS
+      now - lastSentAt < OTP_RESEND_COOLDOWN_MS
     ) {
       const remainingSeconds = Math.ceil(
         (
@@ -677,7 +681,7 @@ const requestForgotPasswordOTP = async (req, res) => {
 
       return res.status(429).json({
         success: false,
-        message: `Please wait ${remainingSeconds} seconds before requesting another OTP`,
+        message: `Please wait ${remainingSeconds} seconds before requesting another OTP.`,
         remainingSeconds,
       });
     }
@@ -686,25 +690,19 @@ const requestForgotPasswordOTP = async (req, res) => {
     // DAILY OTP LIMIT
     // ==================================================
 
-    let dailyCount =
-      Number(
-        user.resetPasswordOtpDailyCount || 0
-      );
+    let dailyCount = Number(
+      user.resetPasswordOtpDailyCount || 0
+    );
 
-    let dailyResetAt =
-      user.resetPasswordOtpDailyResetAt
-        ? new Date(
-          user.resetPasswordOtpDailyResetAt
-        ).getTime()
-        : 0;
+    let dailyResetAt = user.resetPasswordOtpDailyResetAt
+      ? new Date(
+        user.resetPasswordOtpDailyResetAt
+      ).getTime()
+      : 0;
 
     // Start a new 24-hour window
-    if (
-      !dailyResetAt ||
-      now >= dailyResetAt
-    ) {
+    if (!dailyResetAt || now >= dailyResetAt) {
       dailyCount = 0;
-
       dailyResetAt =
         now + 24 * 60 * 60 * 1000;
     }
@@ -719,13 +717,12 @@ const requestForgotPasswordOTP = async (req, res) => {
 
       return res.status(429).json({
         success: false,
-        message:
-          `Daily OTP limit reached. Try again in approximately ${remainingHours} hour(s).`,
+        message: `Daily OTP limit reached. Try again in approximately ${remainingHours} hour(s).`,
       });
     }
 
     // ==================================================
-    // GENERATE NEW OTP
+    // GENERATE OTP
     // ==================================================
 
     const otp = String(
@@ -735,42 +732,10 @@ const requestForgotPasswordOTP = async (req, res) => {
     const otpHash = hashValue(otp);
 
     // ==================================================
-    // SAVE PREVIOUS DATA
-    // FOR ROLLBACK IF EMAIL FAILS
+    // SAVE OTP DATA
     // ==================================================
 
-    previousOtpData = {
-      resetPasswordOtpHash:
-        user.resetPasswordOtpHash,
-
-      resetPasswordOtpExpires:
-        user.resetPasswordOtpExpires,
-
-      resetPasswordOtpAttempts:
-        user.resetPasswordOtpAttempts,
-
-      resetPasswordLastOtpSentAt:
-        user.resetPasswordLastOtpSentAt,
-
-      resetPasswordOtpDailyCount:
-        user.resetPasswordOtpDailyCount,
-
-      resetPasswordOtpDailyResetAt:
-        user.resetPasswordOtpDailyResetAt,
-
-      resetPasswordTokenHash:
-        user.resetPasswordTokenHash,
-
-      resetPasswordTokenExpires:
-        user.resetPasswordTokenExpires,
-    };
-
-    // ==================================================
-    // SAVE NEW OTP
-    // ==================================================
-
-    user.resetPasswordOtpHash =
-      otpHash;
+    user.resetPasswordOtpHash = otpHash;
 
     user.resetPasswordOtpExpires =
       new Date(
@@ -788,36 +753,31 @@ const requestForgotPasswordOTP = async (req, res) => {
     user.resetPasswordOtpDailyResetAt =
       new Date(dailyResetAt);
 
-    // --------------------------------------------------
-    // IMPORTANT:
-    // NEW OTP INVALIDATES OLD RESET TOKEN
-    // --------------------------------------------------
-
-    user.resetPasswordTokenHash =
-      undefined;
-
-    user.resetPasswordTokenExpires =
-      undefined;
+    // New OTP invalidates old reset token
+    user.resetPasswordTokenHash = undefined;
+    user.resetPasswordTokenExpires = undefined;
 
     await user.save();
 
     // ==================================================
-    // SEND EMAIL
+    // CREATE SMTP TRANSPORTER
     // ==================================================
 
-    transporter =
-      createTransporter();
+    transporter = createTransporter();
+
+    // ==================================================
+    // SEND OTP ONLY TO DATABASE USER EMAIL
+    // ==================================================
 
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: user.email,
-
       subject: "Your Password Reset OTP",
 
       text: `
 Password Reset Request
 
-Hello ${user.fullName || "there"},
+Hello ${user.name || "there"},
 
 We received a request to reset the password for your account.
 
@@ -825,18 +785,15 @@ Your Password Reset OTP is: ${otp}
 
 This OTP is valid for 10 minutes.
 
-IMPORTANT: Never share this OTP with anyone. Our support team will never ask you for your OTP or password.
+IMPORTANT:
+Never share this OTP with anyone.
+Our support team will never ask for your OTP or password.
 
-For your security:
-• This OTP can be used only for your password reset request.
-• Do not forward this email to anyone.
-• If you did not request this password reset, you can safely ignore this email.
-
-This is an automated email. Please do not reply.
+If you did not request this password reset, you can safely ignore this email.
 
 Regards,
 Support Team
-`,
+      `,
 
       html: `
 <!doctype html>
@@ -871,7 +828,6 @@ Support Team
     <tr>
       <td align="center">
 
-        <!-- Main Card -->
         <table
           width="100%"
           cellpadding="0"
@@ -947,7 +903,6 @@ Support Team
               padding:30px 38px 35px 38px;
             ">
 
-              <!-- Greeting -->
               <p style="
                 margin:0 0 8px 0;
                 font-size:16px;
@@ -967,7 +922,6 @@ Support Team
                 We received a request to reset the password for your account.
                 Enter the verification code below to continue.
               </p>
-
 
               <!-- OTP Box -->
               <table
@@ -997,7 +951,6 @@ Support Team
                       VERIFICATION CODE
                     </div>
 
-                    <!-- OTP -->
                     <div style="
                       font-size:30px;
                       line-height:40px;
@@ -1005,8 +958,6 @@ Support Team
                       letter-spacing:8px;
                       color:#111827;
                       white-space:nowrap;
-                      word-break:keep-all;
-                      overflow:hidden;
                     ">
                       ${otp}
                     </div>
@@ -1023,8 +974,7 @@ Support Team
                 </tr>
               </table>
 
-
-              <!-- Important Warning -->
+              <!-- Warning -->
               <table
                 width="100%"
                 cellpadding="0"
@@ -1044,20 +994,15 @@ Support Team
                     line-height:1.65;
                     color:#9a3412;
                   ">
-
                     <strong>
                       🔒 Never share this OTP with anyone.
                     </strong>
-
                     <br />
-
                     Our support team will never ask for your OTP,
                     password, or security credentials.
-
                   </td>
                 </tr>
               </table>
-
 
               <!-- Security Tips -->
               <table
@@ -1100,8 +1045,6 @@ Support Team
                 </tr>
               </table>
 
-
-              <!-- Not Requested -->
               <p style="
                 margin:0;
                 padding-top:22px;
@@ -1116,7 +1059,6 @@ Support Team
 
             </td>
           </tr>
-
 
           <!-- Footer -->
           <tr>
@@ -1142,7 +1084,7 @@ Support Team
                 font-size:11px;
                 color:#b0b5bd;
               ">
-                © ${new Date().getFullYear()} Your Application
+                © ${new Date().getFullYear()} Furniture
               </p>
 
             </td>
@@ -1156,9 +1098,8 @@ Support Team
 
 </body>
 </html>
-  `,
+      `,
     });
-
 
     // ==================================================
     // SUCCESS
@@ -1166,63 +1107,24 @@ Support Team
 
     return res.status(200).json({
       success: true,
-      message:
-        "If an account exists with this email, an OTP has been sent.",
+      message: "OTP sent successfully to your registered email address.",
     });
+
   } catch (error) {
+
     console.error(
       "Request Forgot Password OTP Error:",
       error
     );
-
-    // ==================================================
-    // ROLLBACK DATABASE IF EMAIL FAILED
-    // ==================================================
-
-    if (
-      user &&
-      previousOtpData
-    ) {
-      try {
-        user.resetPasswordOtpHash =
-          previousOtpData.resetPasswordOtpHash;
-
-        user.resetPasswordOtpExpires =
-          previousOtpData.resetPasswordOtpExpires;
-
-        user.resetPasswordOtpAttempts =
-          previousOtpData.resetPasswordOtpAttempts;
-
-        user.resetPasswordLastOtpSentAt =
-          previousOtpData.resetPasswordLastOtpSentAt;
-
-        user.resetPasswordOtpDailyCount =
-          previousOtpData.resetPasswordOtpDailyCount;
-
-        user.resetPasswordOtpDailyResetAt =
-          previousOtpData.resetPasswordOtpDailyResetAt;
-
-        user.resetPasswordTokenHash =
-          previousOtpData.resetPasswordTokenHash;
-
-        user.resetPasswordTokenExpires =
-          previousOtpData.resetPasswordTokenExpires;
-
-        await user.save();
-      } catch (rollbackError) {
-        console.error(
-          "OTP Rollback Error:",
-          rollbackError
-        );
-      }
-    }
 
     return res.status(500).json({
       success: false,
       message:
         "Unable to send OTP right now. Please try again later.",
     });
+
   } finally {
+
     if (transporter) {
       transporter.close();
     }
