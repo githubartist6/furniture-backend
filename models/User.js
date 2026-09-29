@@ -6,62 +6,21 @@ const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema(
   {
-    fullName: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    phone: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    addressLine1: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    addressLine2: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    city: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    state: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    pincode: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    country: {
-      type: String,
-      trim: true,
-      default: "India",
-    },
-
-    isDefault: {
-      type: Boolean,
-      default: false,
-    },
+    fullName: { type: String, trim: true, required: true },
+    phone: { type: String, trim: true, required: true },
+    alternatePhone: { type: String, trim: true, default: "" },
+    pincode: { type: String, trim: true, required: true },
+    location: { type: String, trim: true, required: true },
+    addressLine1: { type: String, trim: true, required: true },
+    addressLine2: { type: String, trim: true, default: "" },
+    landmark: { type: String, trim: true, default: "" },
+    city: { type: String, trim: true, required: true },
+    state: { type: String, trim: true, required: true },
+    country: { type: String, trim: true, default: "India" },
+    addressType: { type: String, enum: ["Home", "Work", "Other"], default: "Home" },
+    isDefault: { type: Boolean, default: true },
   },
-  {
-    _id: true,
-  }
+  { timestamps: true }
 );
 
 // ======================================================
